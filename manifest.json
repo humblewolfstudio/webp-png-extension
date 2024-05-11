@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "WebP to PNG Downloader",
-    "description": "Basic extension that when enabled, it automatically downloads all the webP images as a PNG. Any problems/bugs or new features you can post them here: https://github.com/humblewolfstudio/webp-png-extension/issues",
+    "description": "Basic extension that when enabled, it automatically downloads all the webP images as a PNG.",
     "version": "1.0",
     "background": {
         "service_worker": "service-worker.js",
