@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Hello World",
+    "description": "Base Level Extension",
+    "version": "1.0",
+    "background": {
+        "service_worker": "service-worker.js",
+        "type": "module"
+    },
+    "action": {
+        "default_popup": "index.html",
+        "default_icon": "extension_icon.png"
+    },
+    "permissions": [
+        "downloads"
+    ],
+    "host_permissions": [
+        "http://*/",
+        "http://*/*",
+        "https://*/",
+        "https://*/*"
+    ]
+}
