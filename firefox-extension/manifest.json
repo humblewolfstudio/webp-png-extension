@@ -4,20 +4,20 @@
     "description": "Basic extension that when enabled, it automatically downloads all the webP images as a PNG.",
     "version": "1.1",
     "background": {
-        "service_worker": "service-worker.js",
-        "type": "module"
+        "scripts": [
+            "service-worker.js"
+        ]
     },
     "action": {
-        "default_popup": "index.html",
-        "default_icon": "extension_icon.png"
+        "default_popup": "index.html"
+    },
+    "icons": {
+        "48": "extension_icon.png"
     },
     "permissions": [
         "downloads"
     ],
     "host_permissions": [
-        "http://*/",
-        "http://*/*",
-        "https://*/",
-        "https://*/*"
+        "<all_urls>"
     ]
 }

@@ -1,48 +1,58 @@
 const checkDownload = async (result) => {
     const downloadImage = result[0];
 
-    if (downloadImage.mime == 'image/webp') {
+    if (getMime(downloadImage) == 'image/webp') {
         // Cancel the download of the webp
         cancelCurrentDownload(downloadImage.id);
         // Get the buffer of the image
-        const webpBuffer = await getBuffer(downloadImage.finalUrl);
-        const pngBuffer = await convertWebPToPNG(webpBuffer);
-
-        var base64 = btoa(
-            new Uint8Array(pngBuffer)
-                .reduce((data, byte) => data + String.fromCharCode(byte), '')
-        );
-        const pngObjectURL = `data:image/png;base64,${base64}`;
+        const webpBuffer = await getBuffer(downloadImage.url);
+        const pngBlob = await convertWebPToPNG(webpBuffer);
 
         const regex = /\/([^\/]+)\.webp$/;
         const match = regex.exec(downloadImage.filename);
         const fileName = match ? match[1] : null;
 
-        chrome.downloads.download({
-            url: pngObjectURL,
-            filename: fileName != null ? './' + fileName + '.png' : ''
-        });
+        try {
+            browser.downloads.download({
+                url: URL.createObjectURL(pngBlob),
+                filename: fileName != null ? fileName + '.png' : ''
+            });
+
+        } catch (error) {
+            console.error(error);
+        }
     }
 }
 
+const getMime = (downloadImage) => {
+    if (downloadImage.mime) return downloadImage.mime;
+    if (/\.webp$/.test(downloadImage.url)) return 'image/webp';
+    return '';
+}
+
 const cancelCurrentDownload = async (id) => {
-    chrome.downloads.cancel(id, () => {
+    browser.downloads.cancel(id, () => {
         console.log('Stopped correctly');
-        chrome.downloads.erase({ id: id }, () => {
+        browser.downloads.erase({ id: id }, () => {
             console.log('Erased corretcly');
         });
     });
 }
 
 const getBuffer = async (link) => {
-    const res = await fetch(link);
-    const buffer = await res.arrayBuffer();
-    return buffer;
+    try {
+        const res = await fetch(link);
+        const buffer = await res.arrayBuffer();
+        return buffer;
+
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
 }
 
 const downloadListener = (downloadItem) => {
-    if (!downloadItem.filename) return;
-    chrome.downloads.search({ id: downloadItem.id }, checkDownload)
+    browser.downloads.search({ id: downloadItem.id }, checkDownload)
 }
 
 async function convertWebPToPNG(webpArrayBuffer) {
@@ -57,19 +67,17 @@ async function convertWebPToPNG(webpArrayBuffer) {
 
     const pngBlob = await offscreenCanvas.convertToBlob({ type: 'image/png' });
 
-    const pngArrayBuffer = await pngBlob.arrayBuffer();
-
-    return pngArrayBuffer;
+    return pngBlob;
 }
 
-chrome.runtime.onMessage.addListener((request, sender, reply) => {
+browser.runtime.onMessage.addListener((request, sender, reply) => {
     const { activated } = request;
 
     if (activated) {
-        chrome.downloads.onChanged.addListener(downloadListener);
+        browser.downloads.onChanged.addListener(downloadListener);
         reply({ done: true });
     } else {
-        chrome.downloads.onChanged.removeListener(downloadListener);
+        browser.downloads.onChanged.removeListener(downloadListener);
         reply({ done: false });
     }
 
