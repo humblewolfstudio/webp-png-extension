@@ -1,7 +1,9 @@
 const label = document.getElementById('label');
 const toggle = document.getElementById('toggle');
 
-toggle.checked = localStorage.getItem('webp_toggle', false);
+const checked = JSON.parse(localStorage.getItem('webp_toggle') || false);
+
+toggle.checked = checked;
 
 toggle.addEventListener('change', (ev) => {
     const checked = ev.target.checked;
